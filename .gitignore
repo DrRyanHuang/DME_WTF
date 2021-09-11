@@ -129,8 +129,8 @@ dmypy.json
 .pyre/
 
 # hxdm, 这里是新加的
-./data/*
-./model_pretrained/*
-./output/*
+./data/
+./model_pretrained/
+./output/
 ./.vscode
 ./APTOS Big Data Competition Preliminary Dataset.rtf
