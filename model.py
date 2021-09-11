@@ -408,7 +408,7 @@ class TianChiModel(nn.Module):
         'wide_resnet101_2': wide_resnet101_2
     }
 
-    def __init__(self, model_name, input_channel=3, num_classes=7, pretrained=True):
+    def __init__(self, model_name, input_channel=3,  class_out=4, regr_out=3, pretrained=True):
 
         super(TianChiModel, self).__init__()
         
@@ -424,11 +424,20 @@ class TianChiModel(nn.Module):
                                       stride=2, 
                                       padding=3,
                                       bias=False)
-        self.last_fc1 = nn.Linear(1000, num_classes)
+        self.class_fc1 = nn.Linear(1000, class_out)
+        self.class_fc1_relu = nn.ReLU(inplace=True)
+
+        self.regr_fc1 = nn.Linear(1000, regr_out)
+        self.regr_fc1_sigmoid = nn.Sigmoid()
 
     def forward(self, inputs):
 
         resnet_out = self.resnet(inputs)
-        output = self.last_fc1(resnet_out)
 
-        return output
+        cls_output = self.class_fc1(resnet_out)
+        cls_output = self.class_fc1_relu(cls_output)
+
+        reg_output = self.regr_fc1(resnet_out)
+        reg_output = self.regr_fc1_sigmoid(reg_output)
+
+        return cls_output, reg_output

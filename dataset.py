@@ -139,14 +139,3 @@ class TianChiData(Dataset):
 
         return os.path.join(all_data_dir, wrong_file_parent, wrong_file_name)
 
-
-
-
-# import preprocess as pp
-
-# train_Dateset = TianChiData(pp.new_DF_preprocessed_without_NaN_tr, 
-#                             "data/OneDrive_2_2021-9-8", mode="train")
-# # Valid_Dateset = 
-
-# test_Dataset = TianChiData(pp.new_DF_preprocessed_without_NaN_te, 
-#                            "data/OneDrive_1_2021-9-11", mode="test")
