@@ -408,7 +408,7 @@ class TianChiModel(nn.Module):
         'wide_resnet101_2': wide_resnet101_2
     }
 
-    def __init__(self, model_name, input_channel=3,  class_out=4, regr_out=3, pretrained=True):
+    def __init__(self, model_name, input_channel=3,  class_out=4, regr_out=3, pretrained=False):
 
         super(TianChiModel, self).__init__()
         
@@ -417,22 +417,23 @@ class TianChiModel(nn.Module):
             raise NotImplementedError("说好的只爱 ResNet 呢? 不爱了是吗? 所以爱会消失是吗?")
 
         # 加载预训练模型后再该模型, 感觉其实不用加载了hhhh......
-        self.resnet = self.model_zoo[model_name](pretrained=pretrained)
+        self.resnet = self.model_zoo[model_name](pretrained=False, num_classes=200) # 不用预训练模型了......
         self.resnet.conv1 = nn.Conv2d(input_channel, 
                                       64, 
                                       kernel_size=7, 
                                       stride=2, 
                                       padding=3,
                                       bias=False)
-        self.class_fc1 = nn.Linear(1000, class_out)
+        self.class_fc1 = nn.Linear(200+17, class_out)
         self.class_fc1_relu = nn.ReLU(inplace=True)
 
-        self.regr_fc1 = nn.Linear(1000, regr_out)
+        self.regr_fc1 = nn.Linear(200+17, regr_out)
         self.regr_fc1_sigmoid = nn.Sigmoid()
 
-    def forward(self, inputs):
+    def forward(self, inputs, other_info):
 
         resnet_out = self.resnet(inputs)
+        resnet_out = torch.cat([resnet_out, other_info], axis=1)
 
         cls_output = self.class_fc1(resnet_out)
         cls_output = self.class_fc1_relu(cls_output)

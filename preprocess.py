@@ -359,3 +359,15 @@ new_DF_preprocessed_without_NaN_te["patient ID"] = test_data_df_without_nan["pat
 
 new_DF_preprocessed_without_NaN_tr.to_csv("./data/new_DF_preprocessed_without_NaN_tr.csv", index=False)
 new_DF_preprocessed_without_NaN_te.to_csv("./data/new_DF_preprocessed_without_NaN_te.csv", index=False)
+
+
+some_interesting_dict = dict(
+    mean_std_tuple_age = mean_std_tuple_age,
+    mean_std_tuple_preVA_=mean_std_tuple_preVA_,
+    min_preCST=min_preCST, 
+    max_preCST=max_preCST,
+    min_VA=min_VA, 
+    max_VA=min_VA,
+    min_CST=min_CST, 
+    max_CST=max_CST
+)

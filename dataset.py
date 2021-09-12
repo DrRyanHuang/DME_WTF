@@ -54,16 +54,19 @@ class TianChiData(Dataset):
         img_concat = self.__read_img(img12_list)
         number_info = currrent_Series[:17].values    # <------- 注意此处是改特征的地方
 
-        # 这一步做特征融合, 也不知道效果好不好
-        number_info_array = np.tile(number_info[:, None, None], 
-                                    (1, img_concat.shape[1], img_concat.shape[2]))
-        number_info_array = np.concatenate([img_concat, number_info_array], axis=0) 
+        # # 这一步做特征融合, 也不知道效果好不好
+        # number_info_array = np.tile(number_info[:, None, None], 
+        #                             (1, img_concat.shape[1], img_concat.shape[2]))
+        # number_info_array = np.concatenate([img_concat, number_info_array], axis=0) 
 
         if self.mode != 'test':
             label_info  = currrent_Series[17:-1].values  # -1 是删去病人 ID 的意思               
-            return number_info_array.astype(np.float32), label_info.astype(np.float32)
+            return img_concat.astype(np.float32), \
+                    number_info.astype(np.float32), \
+                    label_info.astype(np.float32), \
+                    currrent_Series[-1] # 最后这个是病人ID
         else:
-            return number_info_array.astype(np.float32)
+            return img_concat.astype(np.float32), number_info.astype(np.float32), currrent_Series[-1]
 
     def __len__(self):
         return len(self.data_DF)

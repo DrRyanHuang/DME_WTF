@@ -2,6 +2,7 @@
 @Author: RyanHuang
 @Data  : 20210911
 """
+import os
 import torch
 import torch.nn.functional as F
 import preprocess as pp
@@ -49,8 +50,8 @@ testloader  = torch.utils.data.DataLoader(test_Dataset,
 
 # --------- 模型初始化 ---------
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = TianChiModel('resnet50', input_channel=35, class_out=4, regr_out=3).to(device)
-if False:
+model = TianChiModel('resnet50', input_channel=18, class_out=4, regr_out=3).to(device)
+if True and os.path.exists(MODEL_SAVE_PATH):
     model.load_state_dict(torch.load(MODEL_SAVE_PATH))
 
 model.train()
@@ -61,35 +62,38 @@ loss_func_CE = torch.nn.CrossEntropyLoss(reduction='mean')
 loss_func_MSE = torch.nn.MSELoss()
 
 # --------- 模型初始化 ---------
+try:
+    for epc in range(EPOCH):
+        for i, (X, other_info, y, _) in enumerate(trainloader):
 
-for epc in range(EPOCH):
-    for i, (X, y) in enumerate(trainloader):
+            # 淦, 最新版本的 DataLoader 加载进来直接就是 Tensor
+            # X = torch.from_numpy(X).to(device)
+            # y = torch.from_numpy(y).to(device)
+            X = X.to(device)
+            y = y.to(device)
+            other_info = other_info.to(device)
 
-        # 淦, 最新版本的 DataLoader 加载进来直接就是 Tensor
-        # X = torch.from_numpy(X).to(device)
-        # y = torch.from_numpy(y).to(device)
-        X = X.to(device)
-        y = y.to(device)
+            # print(X.shape, type(X), X.requires_grad)
+            # print(y.shape)
 
-        # print(X.shape, type(X), X.requires_grad)
-        # print(y.shape)
+            cls_output, reg_output = model(X, other_info)
 
-        cls_output, reg_output = model(X)
+            # loss_mse = loss_func_MSE(reg_output, y[:, :3])
+            # loss_ce = F.binary_cross_entropy_with_logits(cls_output, y[:, 3:]) # .type(torch.long)
 
-        loss_mse = loss_func_MSE(reg_output, y[:, :3])
-        loss_ce = F.binary_cross_entropy_with_logits(cls_output, y[:, 3:]) # .type(torch.long)
+            # loss = loss_ce_w * loss_ce + loss_mse_w * loss_mse
+            loss_mse = loss_func_MSE(torch.cat([reg_output, cls_output], axis=1), y)
+            loss = loss_mse
 
-        loss = loss_ce_w * loss_ce + loss_mse_w * loss_mse
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        if not i % 5:
-            print(loss)
-        
-        break
-    break
+            if not i % 2:
+                print(loss)
+except KeyboardInterrupt:
+    torch.save(model.state_dict(), MODEL_SAVE_PATH)
+    print("保存完毕!!")
 
 
 torch.save(model.state_dict(), MODEL_SAVE_PATH)
